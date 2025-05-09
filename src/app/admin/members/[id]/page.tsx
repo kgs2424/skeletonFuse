@@ -1,8 +1,9 @@
 'use client';
 
-import { Box, Button, Modal, Table, TextField } from "@mui/material";
+import { Box, Button, Modal, Table, TableBody, TableCell, TableHead, TableRow, TextField } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { members } from '..'
 /**
  * 브라우저 주소에서 /admin/members/1 이렇게 이동가능
  * url파라미터를 받아옴 -> useParams() 이거에 대해서 다시좀 볼것
@@ -11,20 +12,9 @@ import { useState } from "react";
 export default function AdminMemberDetailPage() {
     const { id } = useParams();
     
-    const member = {
-        id,
-        name: '채원',
-        phone: '010-2424-2424',
-        email:'testaaa@name.com',
-        joinedAt: '2024-24-24',
-    };
+    const member = members.find((m) => String(m.id) === id);
+    const [payments, setPayments] = useState(member?.payments ?? []);
 
-    const [payments, setPayments] = useState([
-        {id: 1, month:'2024-01', amount:30000, paidAt: '2024-01-04'},
-        {id: 2, month:'2024-02', amount:30000, paidAt: '2024-02-04'},
-        {id: 3, month:'2024-03', amount:30000, paidAt: '2024-03-04'},
-        {id: 4, month:'2024-04', amount:30000, paidAt: null},
-    ]);
     const paymentsTableTbody = payments.map((payment) => ({
         ...payment,
         isPaid: !!payment.paidAt,
@@ -93,15 +83,15 @@ export default function AdminMemberDetailPage() {
                     </Button>
                 </div>
                 <Table className="min-w-full">
-                    <thead>
-                        <tr>
-                        <th className="text-left p-8">회비월</th>
-                        <th className="text-left p-8">납부금액</th>
-                        <th className="text-left p-8">납부일</th>
-                        <th className="text-left p-8">상태</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell className="text-left p-8">회비월</TableCell>
+                            <TableCell className="text-left p-8">납부금액</TableCell>
+                            <TableCell className="text-left p-8">납부일</TableCell>
+                            <TableCell className="text-left p-8">상태</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
                     {/* {payments.map((payment) => {
                         const isPaid = !!payment.paidAt;
                         return (
@@ -120,21 +110,33 @@ export default function AdminMemberDetailPage() {
                         );
                     })} */}
                     {paymentsTableTbody.map((p) => (
-                        <tr key={p.id} className={p.rowClass}>
-                        <td className="text-left p-8">{p.month}</td>
-                        <td className="text-left p-8">{p.amount.toLocaleString()}원</td>
-                        <td className="text-left p-8">{p.paidAt || '-'}</td>
-                        <td className={`text-left p-8 font-semibold ${p.statusClass}`}>
-                            {p.statusLabel}
-                        </td>
-                        </tr>
+                        <TableRow key={p.id} className={p.rowClass}>
+                            <TableCell className="text-left p-8">{p.month}</TableCell>
+                            <TableCell className="text-left p-8">{p.amount.toLocaleString()}원</TableCell>
+                            <TableCell className="text-left p-8">{p.paidAt || '-'}</TableCell>
+                            <TableCell className={`text-left p-8 font-semibold ${p.statusClass}`}>
+                                {p.statusLabel}
+                            </TableCell>
+                        </TableRow>
                     ))}
-                    </tbody>
+                    </TableBody>
                 </Table>
             </div>
         {/* 납부 추가 모달 */}
         <Modal open={opened} onClose={ ()=> setOpened(false)}>
-            <Box>
+            <Box 
+                sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'white',
+                    p: 4,
+                    boxShadow: 24,
+                    borderRadius: 2,
+                }}
+            >
                 <h2 className="text-lg font-bold mb-16">납부 내역 추가</h2>
                 <TextField 
                     label='회비월 (yyyy-mm)'
