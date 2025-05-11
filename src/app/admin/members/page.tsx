@@ -1,9 +1,10 @@
 'use client';
 
-import { Checkbox, FormControlLabel, MenuItem, Select, Table, TableCell, TableRow, TextField } from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, MenuItem, Modal, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField } from "@mui/material";
 import Link from "next/link";
 import { useState } from "react";
 import { members } from '.';
+import type { Member } from "../type";
 /**
  * 회원 관리 페이지
  * @returns 
@@ -45,6 +46,31 @@ export default function AdminMembersPage() {
             textClass: isUnpaid ? 'text-red-600 font-semibold' : '',
         }
     })
+
+    // 선택한 회원(상세페이지)
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    // 열기
+    const handleOpenDetail = (member) => {
+        setSelectedMember(member);
+    };
+    // 닫기
+    const handleCloseDetail = () => {
+        setSelectedMember(null);
+    };
+    const selectedMemberDetail = selectedMember?.payments.map((p)=>{
+        const isPaid = !!p.paidAt;
+        return (
+            <TableRow key={`${p.month}abc`}>
+                <TableCell>{p.month}</TableCell>
+                <TableCell>{p.amount?.toLocaleString()}원</TableCell>
+                <TableCell>{p.paidAt || '-'}</TableCell>
+                <TableCell className={isPaid ? 'text-green-600' : 'text-red-600'}>
+                    {isPaid ? '완납' : '미납'}
+                </TableCell>
+            </TableRow>
+        );
+    })
+    
 
     return (
         <div className="p-24">
@@ -122,8 +148,14 @@ export default function AdminMembersPage() {
                         <TableRow key={member.id} className={member.rowClass}>
                             <TableCell className={member.textClass}>
                                 <Link href={`/admin/members/${member.id}`} className="text-blue-600 hover:underline">
-                                    {member.name}
+                                    {member.name} 이건 링크
                                 </Link>
+                                <span
+                                    className="text-blue-600 hover:underline"
+                                    onClick={ ()=> handleOpenDetail(member)}
+                                >
+                                    {member.name} 이건 모달
+                                </span>
                             </TableCell>
                             <TableCell className="text-left p-8">{member.email}</TableCell>
                             <TableCell className={`text-left p-8 ${member.textClass}`}>{member.joinedAt}</TableCell>
@@ -132,6 +164,63 @@ export default function AdminMembersPage() {
 
                 </tbody>
             </Table>
+
+            {/* 회원 상세페이지 모달 */}
+            <Modal open={!!selectedMember} onClose={handleCloseDetail}>
+                <Box 
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 600,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        boxShadow: 24,
+                        p: 4,
+                    }}>
+                    {selectedMember && (
+                        <>
+                            <h2 className="text-xl font-bold mb-16">상세정보</h2>
+                            <div className="flex justify-end">
+                                <Button variant="outlined" onClick={handleCloseDetail}>닫기</Button>
+                            </div>
+                            <div className="space-y-4 mb-16">
+                                <div>이름: {selectedMember.name}</div>
+                                <div>이메일: {selectedMember.email}</div>
+                                <div>전화번호: {selectedMember.phone}</div>
+                                <div>가입일: {selectedMember.joinedAt}</div>
+                            </div>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>회비월</TableCell>
+                                        <TableCell>납부금액</TableCell>
+                                        <TableCell>납부일</TableCell>
+                                        <TableCell>상태</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {selectedMemberDetail}
+                                    {/* {selectedMember.payments.map((p) => {
+                                        const isPaid = !!p.paidAt;
+                                        return (
+                                            <TableRow key={`${p.month}abc`}>
+                                                <TableCell>{p.month}</TableCell>
+                                                <TableCell>{p.amount?.toLocaleString()}원</TableCell>
+                                                <TableCell>{p.paidAt || '-'}</TableCell>
+                                                <TableCell className={isPaid ? 'text-green-600' : 'text-red-600'}>
+                                                    {isPaid ? '완납' : '미납'}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })} */}
+                                </TableBody>
+                            </Table>
+                        </>
+                    )}
+                </Box>
+            </Modal>
         </div>
     );
 };
@@ -157,4 +246,24 @@ export default function AdminMembersPage() {
  *  next.js가 서버 쪽에서 컴포넌트를 최적화 하거나 코드 스플리팅할 때 일반함수가 내부적으로 더 최적화 쉽게함
  *  arrow function은 자신만의 this가 없고 상위 스코프의 this 를 그대로 가짐
  * 
+ */
+
+/**
+ * Tree Shaking ?
+ * 안 쓰는 코드를 최종 번들 파일에서 자동으로 제거하는 최적화 기법
+ * 번들러가 이걸 지원해야 사용가능
+ * 사이드 이펙트가 없어야 잘 작동함
+ * 타입만 쓸 때 type을 붙이면 트리 셰이킹을 도와줌
+ * 타입만 쓴다고 명시해서 런타임에 영향을 안줌
+ */
+
+//헬퍼함수 = 걍 복잡한거 정리해주는 보조함수, 리턴문 위에서 따로 가공해서 쓰면 여러곳에서 쓸 수 있으니 좋음
+
+/**
+ * sx
+ * 내부적으로는 CSS-in-JS 엔진이 처리함
+ * 실제로는 DOM에 CSS클래스가 붙고, 성능이나 기능 제약 없음
+ * 스타일 객체를 변수로 뺴서 재사용도 가능함
+ * 공통 컴포넌트 같은거 만들 때 css동적으로 설정필요할 때 쓰면 좋은듯
+ * mantine에서 cx도 있는데...
  */
