@@ -164,7 +164,7 @@ function AuthJsCredentialsSignInForm() {
 				size="large"
         onClick={()=> alert('??')}
 			>
-				Sign in
+				로그인한다
 			</Button>
 		</form>
 	);
