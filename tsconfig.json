@@ -23,9 +23,9 @@
       "@schema": [
         "./src/@schema"
       ],
-    "@/*": [
-      "./src/*"
-    ]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "declaration": true,
     "target": "esnext",
@@ -56,7 +56,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true
   },
   "exclude": [
@@ -72,6 +72,7 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "next.config.mjs",
-    "build/types/**/*.ts"
+    "build/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ]
 }
